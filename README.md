@@ -31,14 +31,6 @@ Cada gráfico marca o que é **do projeto**, o que é **ilustrativo** e o que é
 
 Atalhos: teclas `1` a `9` trocam de aba, `E` liga o Modo Escuta, e o botão "Letras maiores" ajuda no projetor.
 
-## Como publicar no GitHub Pages
-
-1. Crie um repositório público, por exemplo `wakagi-audio-demo`.
-2. Envie todo o conteúdo desta pasta para a raiz do repositório.
-3. Em **Settings, Pages**, escolha **Deploy from a branch**, branch `main`, pasta `/ (root)`.
-4. Em um ou dois minutos o site fica em `https://SEU-USUARIO.github.io/wakagi-audio-demo/`.
-5. Abra o site, entre na aba **Links e QR**, confira o endereço e clique em **Baixar PNG** para o QR do site. O do DOI já está em `assets/qr/doi.png`.
-
 Para gerar o QR por linha de comando, use `python3 tools/make_qr.py URL nome` (requer `pip install segno`).
 
 ## Trocar os sons sintetizados pelas gravações
