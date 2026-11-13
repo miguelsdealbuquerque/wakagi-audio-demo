@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Áudio adaptativo do Projeto Wakagi</title>
+<meta name="description" content="Página de apoio do TCC sobre o Audio Design Document (ADD) do Projeto Wakagi. Mixagem em 3D, passos, música, ducking, barramentos, espaço, parâmetros e snapshots, ao vivo no navegador.">
+<meta name="theme-color" content="#0A0A0B">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230A0A0B'/%3E%3Cpath d='M12 32h6l6-18 8 36 8-30 6 12h6' fill='none' stroke='%23F7293D' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/conceitos.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand">
+    <span class="eyebrow">Projeto Wakagi · TCC</span>
+    <h1>Áudio adaptativo, ao vivo</h1>
+    <p>Página de apoio do TCC. Os sons são sintetizados aqui no navegador, sem os assets do projeto, e podem ser trocados por gravações reais. O que vale é o comportamento da mixagem, dos parâmetros e dos snapshots.</p>
+    <p class="hint" id="sndMode" style="margin-top:.3rem">Sons sintetizados. Para usar gravações reais, veja a pasta assets/audio.</p>
+  </div>
+  <div class="ctl">
+    <button class="btn primary" id="power">Ligar o som</button>
+    <label class="vol">Volume<input id="vol" type="range" min="-30" max="0" value="-8" aria-label="Volume geral"></label>
+    <button class="btn" id="zoom" aria-pressed="false">Letras maiores</button>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Cenas">
+  <span class="grp">Ouvir o jogo</span>
+  <a href="#mix" data-t="mix">Mixagem em 3D<kbd>1</kbd></a>
+  <a href="#passos" data-t="passos">Passos<kbd>2</kbd></a>
+  <a href="#musica" data-t="musica">Música<kbd>3</kbd></a>
+  <a href="#barramentos" data-t="barramentos">Voice stealing<kbd>4</kbd></a>
+  <span class="grp">Conceitos do ADD</span>
+  <a href="#dinamica" data-t="dinamica">Dinâmica<kbd>5</kbd></a>
+  <a href="#hierarquia" data-t="hierarquia">Barramentos<kbd>6</kbd></a>
+  <a href="#espaco" data-t="espaco">Espaço<kbd>7</kbd></a>
+  <a href="#parametros" data-t="parametros">Parâmetros e snapshots<kbd>8</kbd></a>
+  <a href="#silencio" data-t="silencio">Silêncio<kbd>9</kbd></a>
+  <span class="grp">Método e referência</span>
+  <a href="#rastreio" data-t="rastreio">Rastreabilidade</a>
+  <a href="#glossario" data-t="glossario">Glossário</a>
+  <a href="#qr" data-t="qr">Links e QR</a>
+</nav>
+
+<!-- 1. MIXAGEM 3D -->
+<section class="panel" id="p-mix">
+  <div class="cols">
+    <div class="card">
+      <h2>Um espaço, três eixos</h2>
+      <p class="sub">Esquerda e direita, grave e agudo, perto e longe. Arraste uma esfera para mudar o endereço do som. Arraste o fundo para girar.</p>
+      <canvas id="cv3d" aria-label="Mapa 3D da mixagem com as fontes sonoras do Projeto Wakagi"></canvas>
+      <p class="hint" id="placeInfo">Quando dois sons ficam no mesmo endereço, um esconde o outro. Aproxime a fauna da música para ver.</p>
+      <div class="row" style="margin-top:.7rem">
+        <button class="btn" id="bDuck" aria-pressed="false">Ducking por prioridade</button>
+        <button class="btn" id="bWalk" aria-pressed="false">Caminhar</button>
+        <button class="btn" id="bHeart" aria-pressed="false">Batimento</button>
+      </div>
+      <div class="row" style="margin-top:.5rem">
+        <button class="btn" data-fx="onca">Onça</button>
+        <button class="btn" data-fx="jacare">Jacaré</button>
+        <button class="btn" data-fx="capivara">Capivara</button>
+        <button class="btn" data-fx="ave">Fauna distante</button>
+        <button class="btn" data-fx="garrafa">Pé-de-garrafa</button>
+        <button class="btn" data-fx="bicho">Bicho-do-mato</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Mixer e snapshots</h2>
+      <p class="sub">Cada fader é um barramento da hierarquia do ADD. O snapshot soma um deslocamento em dB sobre o fader.</p>
+      <div class="snaps">
+        <button class="btn" id="bListen" aria-pressed="false">Modo Escuta <kbd style="font:.75rem var(--mono)">E</kbd></button>
+        <button class="btn warn" id="bLegend" aria-pressed="false">Legend_BichoDoMato</button>
+      </div>
+      <div id="mixer"></div>
+      <p class="hint">Níveis dos snapshots conforme o projeto do FMOD (Modo Escuta e Legend_BichoDoMato) (música em −62 dB, ambiência em −10 dB, fauna distante em −12 dB).</p>
+    </div>
+  </div>
+</section>
+
+<!-- 2. PASSOS -->
+<section class="panel" id="p-passos">
+  <div class="cols">
+    <div class="card">
+      <h2>Evento de passos, dois parâmetros</h2>
+      <p class="sub">O código da Godot envia Superficie e Postura ao evento do FMOD. Escolha os dois e ouça.</p>
+      <div class="surfs" id="surfs"></div>
+      <div class="row" style="margin-top:.9rem;align-items:center">
+        <div class="seg" id="posts" role="group" aria-label="Postura"></div>
+        <button class="btn primary" id="step">Dar um passo</button>
+        <button class="btn" id="walk2" aria-pressed="false">Caminhar</button>
+      </div>
+      <p class="hint">Na demo do jogo, só a superfície Terra tem assets. As outras nove estão estruturadas para a expansão. Aqui, todas usam sons sintetizados de apoio.</p>
+    </div>
+    <div class="card">
+      <h2>O que o código envia</h2>
+      <p class="sub">Parâmetros locais do evento Footsteps, roteado para SFX_FOOTSTEPS.</p>
+      <div class="code" id="codeStep"></div>
+      <h3 style="font-size:1rem;margin:1rem 0 .4rem">Osciloscópio do barramento</h3>
+      <canvas id="scope" height="150" aria-label="Forma de onda do barramento de passos"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- 3. MÚSICA -->
+<section class="panel" id="p-musica">
+  <div class="cols">
+    <div class="card">
+      <h2>Música como máquina de estados</h2>
+      <p class="sub">O parâmetro MusicState decide a trilha. A troca espera o próximo tempo forte, como especifica o ADD.</p>
+      <div class="states" id="states"></div>
+      <div class="row" style="margin-top:.9rem;align-items:center;gap:1rem">
+        <div class="beats" id="beats" aria-label="Tempos do compasso"><i></i><i></i><i></i><i></i></div>
+        <span id="musicInfo" class="hint" style="margin:0">Ligue o som para iniciar a trilha.</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>O que muda em cada estado</h2>
+      <p class="sub">Sete estados são o alvo do jogo final. A demo do jogo usa três.</p>
+      <div class="code" id="codeMusic"></div>
+      <p class="hint">Sons de apoio sintetizados. Os estados marcados como alvo final ainda não existem no jogo, e aqui servem para ouvir a lógica da transição.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4. VOICE STEALING -->
+<section class="panel" id="p-barramentos">
+  <div class="cols">
+    <div class="card">
+      <h2>Limite de vozes e prioridade</h2>
+      <p class="sub">Quando o limite é atingido, o voice stealing corta o som menos importante. O nível S nunca é cortado.</p>
+      <label class="vol" style="margin-bottom:.8rem">Limite de vozes <input id="vlim" type="range" min="3" max="10" value="6" style="width:12rem"><output id="vlimOut" style="font-family:var(--mono);color:var(--fg)">6</output></label>
+      <div class="slots" id="slots"></div>
+      <div class="tiers" style="margin-top:1rem" id="tiers"></div>
+      <div class="row" style="margin-top:.8rem">
+        <button class="btn" id="storm">Tempestade de sons</button>
+        <button class="btn" id="clearV">Limpar</button>
+      </div>
+      <p class="hint">S reúne lenda ativa, animal atacando e QTE. F reúne sons cosméticos e é o primeiro a ser cortado. Os níveis intermediários seguem a tabela do ADD. Entre níveis iguais, esta demo corta o som mais antigo.</p>
+    </div>
+    <div class="card">
+      <h2>Registro</h2>
+      <p class="sub">O que o sistema decidiu em cada disparo.</p>
+      <div class="log" id="vlog"><div>Dispare um som.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="p-dinamica"></section>
+<section class="panel" id="p-hierarquia"></section>
+<section class="panel" id="p-espaco"></section>
+<section class="panel" id="p-parametros"></section>
+<section class="panel" id="p-silencio"></section>
+<section class="panel" id="p-rastreio"></section>
+<section class="panel" id="p-glossario"></section>
+<section class="panel" id="p-qr"></section>
+
+<!-- PARAMETROS -->
+<section class="card" aria-label="Parâmetros enviados ao FMOD">
+  <h2>Parâmetros enviados ao FMOD</h2>
+  <p class="sub">Os oito parâmetros do projeto. HoraDoDia e Tensao são globais.</p>
+  <div class="params" id="params"></div>
+  <div class="sliders">
+    <label>Vento <output id="oVento">0.35</output><input id="sVento" type="range" min="0" max="1" step="0.01" value="0.35"></label>
+    <label>Hora do dia <output id="oHora">14:00</output><input id="sHora" type="range" min="0" max="24" step="0.25" value="14"></label>
+    <label>Tensão <output id="oTens">0.20</output><input id="sTens" type="range" min="0" max="1" step="0.01" value="0.2"></label>
+    <label>Alerta da fauna <output id="oAlert">0.30</output><input id="sAlert" type="range" min="0" max="1" step="0.01" value="0.3"></label>
+  </div>
+  <div class="row" style="margin-top:.8rem"><button class="btn" id="bAuto" aria-pressed="false">Fauna reage ao alerta</button></div>
+</section>
+<footer class="foot">
+  <p>Projeto Wakagi · LEDES Games · Faculdade de Computação, UFMS. TCC de Miguel Sobreira de Albuquerque, orientado por Ricardo Theis Geraldi.</p>
+  <p>ADD v1.4 · <a href="https://doi.org/10.5281/zenodo.24075847" target="_blank" rel="noopener">DOI 10.5281/zenodo.24075847</a> · Documento sob CC BY 4.0 · Código sob licença MIT.</p>
+</footer>
+</div>
+<div id="toast" role="status"></div>
+
+
+<script src="js/vendor/qrcode.js"></script>
+<script src="js/app.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/modules/dinamica.js"></script>
+<script src="js/modules/hierarquia.js"></script>
+<script src="js/modules/espaco.js"></script>
+<script src="js/modules/parametros.js"></script>
+<script src="js/modules/silencio.js"></script>
+<script src="js/modules/rastreio.js"></script>
+<script src="js/modules/glossario.js"></script>
+<script src="js/modules/qr.js"></script>
+</body>
+</html>

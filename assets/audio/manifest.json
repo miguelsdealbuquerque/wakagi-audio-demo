@@ -1,0 +1,4 @@
+{
+  "_ajuda": "Liste aqui os arquivos de som real. Chaves aceitas: passos_Terra, passos_Grama, passos_Madeira, passos_Agua, passos_Lama, passos_FolhasSecas, passos_Galho, passos_Concreto, passos_Pedra, passos_PisoCeramico, onca, jacare, capivara, ave, garrafa, bicho. Cada chave recebe uma lista de arquivos (wav, ogg ou mp3) desta pasta. Um é sorteado a cada disparo.",
+  "_exemplo": { "passos_Terra": ["passos_terra_01.wav", "passos_terra_02.wav"] }
+}
